@@ -7,7 +7,7 @@
  * @example (this example was performed on 4th April 2020) 
  * >> manyHappyReturn("04-04-2020");
  * >> 365days
- * @author Obumuneme Nwabude <obumnwabude@gmail.com>
+ * @author Obumuneme Nwabude <obumnwabude.com>
  * @param {'string'} birthday - the birthday of the person
  * @return {'string'} The number of days to the next birthday
  * @throw Error - if the birthday argument does match any of the following 
@@ -85,10 +85,8 @@ const getDays = (date, month) => {
 
   // check if today's month is less than birthmonth
   if (todayMonth < month) {
-    // if so subtract the days of each month, the days to the birthdate in the birthmonth
-    // and the days from today's date to the birthmonth. sum the differences and return the sum
-    console.log(`${todayMonth} is less than ${month}`);
-    return 0;
+    // if so subtract the birthdate from today's date and return the difference
+    return getDaysDifference([todayDate, todayMonth], [date, month]);
   }
 
   // check if today's month is equal to birthmonth
@@ -103,15 +101,19 @@ const getDays = (date, month) => {
   }
 
   // get number of days from now till 31st December
+  const tillDec = getDaysDifference([todayDate, todayMonth], [31, 12]);
   // get number of days from 1st January to birthdate
+  const fromJan = getDaysDifference([1, 1], [date, month]);
   // sum both and return the sum
-  console.log(`${todayMonth} > ${month} || (${todayMonth} === ${month} && ${todayDate} > ${date})`)
-  return 0;
+  return tillDec + fromJan;
 };
 
-//test
-console.log(manyHappyReturn('07/5'));
-console.log(manyHappyReturn('07/04'));
-console.log(manyHappyReturn('08/04/2020'));
-console.log(manyHappyReturn('04-3-2020'));
-console.log(manyHappyReturn('06-04'));
+/**
+ * returns the difference in days from two dates 
+ * @param (Array.<number>) date1 - the first date to be subtracted from the second
+ * @param (Array.<number>) date2 - the second date to subtract the first date from 
+ * @return days - difference in both dates
+ */
+const getDaysDifference = (date1, date2) => {
+  return Math.ceil(((new Date(2020, date2[1] - 1, date2[0])) - (new Date(2020, date1[1] - 1, date1[0]))) / (1000 * 60 * 60 * 24));
+};
