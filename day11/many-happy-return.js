@@ -79,12 +79,39 @@ const processDate = birthday => {
  */
 const getDays = (date, month) => {
   // get today's date and month
-  // check if today's dat
+  const today = new Date();
+  const todayDate = today.getDate();
+  const todayMonth = today.getMonth() + 1;
+
+  // check if today's month is less than birthmonth
+  if (todayMonth < month) {
+    // if so subtract the days of each month, the days to the birthdate in the birthmonth
+    // and the days from today's date to the birthmonth. sum the differences and return the sum
+    console.log(`${todayMonth} is less than ${month}`);
+    return 0;
+  }
+
+  // check if today's month is equal to birthmonth
+  if (todayMonth === month) {
+    // if so check if today's date is the birthdate, if so return 0
+    if (todayDate === date) return 0;
+    // if so check if today's date is less than birthdate
+    if (todayDate < date) {
+      // if so subtract today's date from birthdate and return the difference
+      return date - todayDate;
+    }
+  }
+
+  // get number of days from now till 31st December
+  // get number of days from 1st January to birthdate
+  // sum both and return the sum
+  console.log(`${todayMonth} > ${month} || (${todayMonth} === ${month} && ${todayDate} > ${date})`)
   return 0;
 };
 
 //test
-console.log(manyHappyReturn('04/04'));
-console.log(manyHappyReturn('04/04/2020'));
-console.log(manyHappyReturn('04-04'));
-console.log(manyHappyReturn('04-4-2020'));
+console.log(manyHappyReturn('07/5'));
+console.log(manyHappyReturn('07/04'));
+console.log(manyHappyReturn('08/04/2020'));
+console.log(manyHappyReturn('04-3-2020'));
+console.log(manyHappyReturn('06-04'));
