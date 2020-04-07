@@ -14,11 +14,18 @@
  * format: 'DD/MM', 'DD-MM', 'DD-MM-YYYY' or 'DD-MM-YYYY'. 
  */
 const manyHappyReturn = birthday => {
+  // the number of days to the next birthday, the birthdate and birthmonth
+  let days, date, month;
+  // get the birthdate and birthmonth from the provided birthday string
   try {
-    return processDate(birthday);
+    [date, month] = processDate(birthday);
   } catch(error) {
-    return error
+    throw error;
   }
+  // get the number of days to the next birthday from the birthmonth and birthdate
+  days = getDays(date, month);
+  // return number of days to the next birthday
+  return `${days}days`;
 };
 
 /**
@@ -36,34 +43,48 @@ const processDate = birthday => {
     throw new Error("The entered birthday must match any of the following format: 'DD/MM', 'DD-MM', 'DD-MM-YYYY' or 'DD-MM-YYYY'");
   }
   // obtain the birthdate and birthmonth from the birthday string
-  let birthdate;
-  let birthmonth;
+  let date = 0;
+  let month = 0;
+  let birthdate = '';
+  let birthmonth = '';
   if (birthday.match('/')) {
     [birthdate, birthmonth] = birthday.split('/');
   }
   if (birthday.match('-')) {
     [birthdate, birthmonth] = birthday.split('-');
   }
-  birthdate = Number(birthdate);
-  birthmonth = Number(birthmonth);
+  date = Number(birthdate);
+  month = Number(birthmonth);
   // check for invalid dates such as 29th Feb or 31st of a 30-day month
   // for February 
-  if (birthmonth === 2) if (birthdate > 28) throw new Error("February has only 28 days");
+  if (month === 2) if (date > 28) throw new Error("February has only 28 days");
   // for 30-days months 
-  switch (birthmonth) {
-    case 4: if (birthdate > 30) throw new Error('April has only 30 days'); break;
-    case 6: if (birthdate > 30) throw new Error('June has only 30 days'); break;
-    case 9: if (birthdate > 30) throw new Error('September has only 30 days'); break;
-    case 11: if (birthdate > 30) throw new Error('November has only 30 days'); break;
+  switch (month) {
+    case 4: if (date > 30) throw new Error('April has only 30 days'); break;
+    case 6: if (date > 30) throw new Error('June has only 30 days'); break;
+    case 9: if (date > 30) throw new Error('September has only 30 days'); break;
+    case 11: if (date > 30) throw new Error('November has only 30 days'); break;
   }
-  // return the birthdate and birthmonth as an array
-  return [birthdate, birthmonth];
-}
+  // ensures that birthdate and birthmonth were properly assigned, if not throw an error
+  // else return the birthdate and birthmonth as an array 
+  if (date === 0 || month === 0) throw new Error('System Failure: Something went wrong');
+  else return [date, month];
+};
+
+/**
+ * Gets the number of days from now till the next birthmonth and birthdate 
+ * @param {number} date - the birthdate of the next birthday
+ * @param {number} month - the birthmonth of the next birthmonth
+ * @return {number} the number of days till the next birthdate and birthmonth
+ */
+const getDays = (date, month) => {
+  // get today's date and month
+  // check if today's dat
+  return 0;
+};
 
 //test
 console.log(manyHappyReturn('04/04'));
 console.log(manyHappyReturn('04/04/2020'));
 console.log(manyHappyReturn('04-04'));
 console.log(manyHappyReturn('04-4-2020'));
-console.log(manyHappyReturn('31/2'));
-console.log(manyHappyReturn('04-04/2020'));
