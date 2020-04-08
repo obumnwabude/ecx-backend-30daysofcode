@@ -1,0 +1,15 @@
+{
+  "name": "drome-server",
+  "version": "1.0.0",
+  "description": "a server that takes in an array of words from a POST request and returns only the words that are palindromes as a response from a GET request",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Obumuneme Nwabude",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  }
+}
