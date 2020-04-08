@@ -1,17 +1,15 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const fs = require('fs')
+const fs = require('fs');
+const sgpa = require('./sgpa');
 const port = 3000 || process.env.PORT;
 
 app.use(bodyParser.urlencoded({ extended: false}));
 
-// for test
-app.use('/', express.static('public'));
-
 app.post('/createdata', (req, res) => {
   try {
-    fs.writeFile('courses.json', JSON.stringify({courses: req.body.courses}), err => {
+    fs.writeFile('courses.json', JSON.stringify({sgpa: sgpa(JSON.parse(req.body.courses))}), err => {
       if (err) {
         res.status(401).json({success:false});
         return;
