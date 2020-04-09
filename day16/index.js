@@ -11,25 +11,18 @@ app.post('/signup', (req, res) => {
   try {
     if (fs.existsSync('users.json')) {
       fs.readFile('users.json', (err, users) => {
-        if (err) {
-          res.status(401).json(err);
-          return;
-        }
+        if (err) return res.status(401).json(err);
         users = JSON.parse(`[${users}]`);
         let user = users.find(one => one.email === req.body.email);
         if (user) {
-          res.status(201).json({
+          return res.status(201).json({
             message: 'user exists already', 
             email: user.email,
             username: user.username
           });
-          return;
         } else {
           fs.appendFile('users.json', `,${JSON.stringify(req.body)}`, err => {
-            if (err) {
-              res.status(401).json(err);
-              return;
-            }
+            if (err) return res.status(401).json(err);
             res.status(201).json({
               message: 'user created successfully', 
               email: req.body.email,
@@ -40,10 +33,7 @@ app.post('/signup', (req, res) => {
       });
     } else { 
       fs.writeFile('users.json', JSON.stringify(req.body), err => {
-        if (err) {
-          res.status(401).json(err);
-          return;
-        }
+        if (err) return res.status(401).json(err);
         res.status(201).json({
           message: 'user created successfully', 
           email: req.body.email,
@@ -60,21 +50,17 @@ app.post('/login', (req, res) => {
   try {
     if (fs.existsSync('users.json')) { 
       fs.readFile('users.json', (err, users) => {
-        if (err) {
-          res.status(401).json(err);
-          return;
-        }
+        if (err) return res.status(401).json(err);
         users = JSON.parse(`[${users}]`);
         let user = users.find(one => one.email === req.body.email);
         if (user) {
-          res.status(201).json({
+          return res.status(201).json({
             message: 'login successful',
             email: user.email,
             username: user.username
           });
-          return;
         } else {
-          res.status(201).json({message: 'no user found, sign up instead'});
+          res.status(201).json({message: 'user not found, please sign up'});
         } 
       });
     } else { 
