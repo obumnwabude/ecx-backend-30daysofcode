@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 const port = 3000 || process.env.PORT;
 
 app.use(bodyParser.urlencoded({ extended: true}));
-app.use('/', express.static('public'));
 
 // handle signup
 app.post('/signup', (req, res) => {
@@ -20,7 +19,7 @@ app.post('/signup', (req, res) => {
         let user = users.find(one => one.email === req.body.email);
         // if so return the found user
         if (user) {
-          return res.status(201).json({
+          return res.status(401).json({
             message: 'user exists already', 
             email: user.email,
             username: user.username
@@ -84,23 +83,28 @@ app.post('/login', (req, res) => {
         let user = users.find(one => one.email === req.body.email);
         if (user) {
           // if so compare passwords 
-
+          bcrypt.compare(req.body.password, user.password, (err, valid) => {
+            if (err) return res.status(401).json(err);
             // if passwords match return succesful login message
-            return res.status(201).json({
-              message: 'login successful',
-              email: user.email,
-              username: user.username
-            });
-
+            if (valid) { 
+              return res.status(201).json({
+                message: 'login successful',
+                email: user.email,
+                username: user.username
+              });
+            } else { 
             // else return message of wrong password
+              return res.status(401).json({message: 'wrong password, please login with correct password'});
+            }
+          });
         } else {
           // if not return message of user not found
-          res.status(201).json({message: 'user not found, please sign up'});
+          res.status(401).json({message: 'user not found, please sign up'});
         } 
       });
     } else { 
       // if not return a message to sign up
-      res.status(201).json({message: 'no user found, sign up instead'});
+      res.status(401).json({message: 'no user found, sign up instead'});
     }
   } catch(error) {
     res.status(401).json(error);
