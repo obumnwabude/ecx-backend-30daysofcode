@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const User = require('./models/user');
 const dateTime = require('./date-time');
 const port = 3000 || process.env.PORT;
 
@@ -43,6 +44,9 @@ app.post('/signup', (req, res) => {
               date: dateTime.date(),
               time: dateTime.time()
             };
+            // create and save the user to the mongodb database
+            const dbUser = new User(user);
+            dbUser.save().then(() => console.log(dbUser)).catch(err => res.status(500).json({error: err}));
             // store the user and return it
             fs.appendFile('users.json', `,${JSON.stringify(user)}`, err => {
               if (err) return res.status(401).json(err);
