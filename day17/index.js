@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
+const dateTime = require('./date-time');
 const port = 3000 || process.env.PORT;
 
 app.use(bodyParser.json());
@@ -32,7 +33,9 @@ app.post('/signup', (req, res) => {
             user = {
               email: req.body.email,
               username: req.body.username,
-              password: hashed
+              password: hashed,
+              date: dateTime.date(),
+              time: dateTime.time()
             };
             // store the user and return it
             fs.appendFile('users.json', `,${JSON.stringify(user)}`, err => {
@@ -54,7 +57,9 @@ app.post('/signup', (req, res) => {
         user = {
           email: req.body.email,
           username: req.body.username,
-          password: hashed
+          password: hashed,
+          date: dateTime.date(),
+          time: dateTime.time()
         };
         // store the user and return it
         fs.writeFile('users.json', JSON.stringify(user), err => {
