@@ -13,15 +13,20 @@ app.post('/signup', (req, res) => {
   try {
     // check if the users file for storing exist
     if (fs.existsSync('users.json')) {
-      // if so thereis a user with the given email
+      // if so check if there is a user with the given email or username
       fs.readFile('users.json', (err, users) => {
         if (err) return res.status(401).json(err);
         users = JSON.parse(`[${users}]`);
-        let user = users.find(one => one.email === req.body.email);
+        const userEmail = users.find(one => one.email === req.body.email);
+        const userUsername = users.find(one => one.username === req.body.username);
+        let user = userEmail || userUsername;
         // if so return the found user
         if (user) {
+          let returnMessage;
+          userEmail ? returnMessage = 'User with the given email exists already': 
+              userUsername ? returnMessage = 'User with the given username exists already' : false;
           return res.status(401).json({
-            message: 'user exists already', 
+            message: returnMessage, 
             email: user.email,
             username: user.username
           });
