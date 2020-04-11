@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 
 mongoose.connect('mongodb://127.0.0.1:27017/ecxbackend', {useNewUrlParser: true, useUnifiedTopology: true})
   .then(() => {
@@ -10,9 +11,9 @@ mongoose.connect('mongodb://127.0.0.1:27017/ecxbackend', {useNewUrlParser: true,
   });
 
 module.exports = mongoose.model('User', new mongoose.Schema({
-  email: String,
-  username: String,
-  password: String,
-  date: String,
-  time: String
-}));
+  email: { type: String, required: true, unique: true },
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  date: { type: String, required: true },
+  time: { type: String, required: true}
+}).plugin(uniqueValidator));

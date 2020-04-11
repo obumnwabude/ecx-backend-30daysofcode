@@ -12,79 +12,37 @@ app.use(bodyParser.json());
 
 // handle signup
 app.post('/signup', (req, res) => {
-  try {
-    // check if the users file for storing exist
-    if (fs.existsSync('users.json')) {
-      // if so check if there is a user with the given email or username
-      fs.readFile('users.json', (err, users) => {
-        if (err) return res.status(401).json(err);
-        users = JSON.parse(`[${users}]`);
-        const userEmail = users.find(one => one.email === req.body.email);
-        const userUsername = users.find(one => one.username === req.body.username);
-        let user = userEmail || userUsername;
-        // if so return the found user
-        if (user) {
-          let returnMessage;
-          userEmail ? returnMessage = `User with email: ${user.email} exists already`: 
-              userUsername ? returnMessage = `User with username: ${user.username} exists already` : false;
-          return res.status(401).json({
-            message: returnMessage, 
-            email: user.email,
-            username: user.username
-          });
-        } else {
-          // if not create a new user
-          // hash the password
-          bcrypt.hash(req.body.password, 10, (err, hashed) => {
-            if (err) return res.status(401).json(err);
-            user = {
-              email: req.body.email,
-              username: req.body.username,
-              password: hashed,
-              date: dateTime.date(),
-              time: dateTime.time()
-            };
-            // create and save the user to the mongodb database
-            const dbUser = new User(user);
-            dbUser.save().then(() => console.log(dbUser)).catch(err => res.status(500).json({error: err}));
-            // store the user and return it
-            fs.appendFile('users.json', `,${JSON.stringify(user)}`, err => {
-              if (err) return res.status(401).json(err);
-              return res.status(201).json({
-                message: 'User created successfully', 
-                email: user.email,
-                username: user.username
-              });
-            });
-          });
-        }
+  // hash the password from req.body 
+  bcrypt.hash(req.body.password, 10)
+    .then(hashed => {
+      // create a new user
+      const user = new User({
+        email: req.body.email,
+        username: req.body.username,
+        password: hashed,
+        date: dateTime.date(),
+        time: dateTime.time()
       });
-    } else { 
-      // if not create a new user 
-      // hash the password
-      bcrypt.hash(req.body.password, 10, (err, hashed) => {
-        if (err) return res.status(401).json(err);
-        user = {
-          email: req.body.email,
-          username: req.body.username,
-          password: hashed,
-          date: dateTime.date(),
-          time: dateTime.time()
-        };
-        // store the user and return it
-        fs.writeFile('users.json', JSON.stringify(user), err => {
-          if (err) return res.status(401).json(err);
-          return res.status(201).json({
-            message: 'User created successfully', 
-            email: user.email,
-            username: user.username
-          });
-        });
-      });
-    }
-  } catch(error) {
-    res.status(500).json(error);
-  }
+      // save and return the user
+      user.save()
+        .then(() => res.status(201).json({
+          message: 'User successfully created',
+          email: user.email,
+          username: user.username 
+        }))
+        .catch(err => {
+          // check if username or email are not unique and return proper message
+          if (err.name === 'ValidationError') {
+            let messages = [];
+            for (let [key, value] of Object.entries(err.errors)) {
+              messages.push(`User with ${key}: ${value.value} exists already`);
+            }
+            const returnMessage = messages.join('\n');
+            return res.status(401).json({message: returnMessage});
+          }
+          res.status(500).json(err);
+        }); 
+    }).catch(err => res.status(500).json(err));
 });
 
 // handle login
