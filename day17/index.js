@@ -23,8 +23,8 @@ app.post('/signup', (req, res) => {
         // if so return the found user
         if (user) {
           let returnMessage;
-          userEmail ? returnMessage = 'User with the given email exists already': 
-              userUsername ? returnMessage = 'User with the given username exists already' : false;
+          userEmail ? returnMessage = `User with email: ${user.email} exists already`: 
+              userUsername ? returnMessage = `User with username: ${user.username} exists already` : false;
           return res.status(401).json({
             message: returnMessage, 
             email: user.email,
@@ -46,7 +46,7 @@ app.post('/signup', (req, res) => {
             fs.appendFile('users.json', `,${JSON.stringify(user)}`, err => {
               if (err) return res.status(401).json(err);
               return res.status(201).json({
-                message: 'user created successfully', 
+                message: 'User created successfully', 
                 email: user.email,
                 username: user.username
               });
@@ -70,7 +70,7 @@ app.post('/signup', (req, res) => {
         fs.writeFile('users.json', JSON.stringify(user), err => {
           if (err) return res.status(401).json(err);
           return res.status(201).json({
-            message: 'user created successfully', 
+            message: 'User created successfully', 
             email: user.email,
             username: user.username
           });
@@ -82,6 +82,7 @@ app.post('/signup', (req, res) => {
   }
 });
 
+// handle login
 app.post('/login', (req, res) => {
   try {
     // check if the users file for storage exists
@@ -98,27 +99,58 @@ app.post('/login', (req, res) => {
             // if passwords match return succesful login message
             if (valid) { 
               return res.status(201).json({
-                message: 'login successful',
+                message: 'Login successful',
                 email: user.email,
                 username: user.username
               });
             } else { 
             // else return message of wrong password
-              return res.status(401).json({message: 'wrong password, please login with correct password'});
+              return res.status(401).json({message: 'Wrong password, please login with correct password'});
             }
           });
         } else {
           // if not return message of user not found
-          res.status(401).json({message: 'user not found, please sign up'});
+          res.status(401).json({message: 'User not found, please sign up'});
         } 
       });
     } else { 
       // if not return a message to sign up
-      res.status(401).json({message: 'no user found, sign up instead'});
+      res.status(401).json({message: 'No user found!, sign up instead'});
     }
   } catch(error) {
     res.status(401).json(error);
   }
 });
+
+// handle getuser 
+app.get('/getuser', (req, res) => {
+  try {
+    // check if the user's file storage exists 
+    if (fs.existsSync('users.json')) { 
+      // if so check if the email in req.body is found
+      fs.readFile('users.json', (err, users) => {
+        if (err) return res.status(401).json(err);
+        users = JSON.parse(`[${users}]`);
+        let user = users.find(one => one.email === req.query.email);
+        if (user) {
+          // if so return the user's email, date and time
+          return res.status(200).json({
+            email: user.email,
+            date: user.date,
+            time: user.time
+          });
+        } else {
+          // else return message that user with specified email was not found
+          res.status(400).json({message: `User with email: ${req.query.email}, not found!`});
+        }
+      });
+    } else {      
+      // else return message that there are no users
+      res.status(400).json({message: 'No users found!'});
+    }
+  } catch(error) {
+    res.status(400).json(error);
+  }
+})
 
 module.exports = app.listen(port);
