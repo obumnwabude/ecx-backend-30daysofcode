@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const dateTime = require('./date-time');
 const port = 3000 || process.env.PORT;
 
@@ -78,7 +79,7 @@ app.post('/signup', (req, res) => {
       });
     }
   } catch(error) {
-    res.status(401).json(error);
+    res.status(500).json(error);
   }
 });
 
@@ -98,10 +99,13 @@ app.post('/login', (req, res) => {
             if (err) return res.status(401).json(err);
             // if passwords match return succesful login message
             if (valid) { 
+              // token signing
+              const token = jwt.sign({email: user.email}, 'RandoM_SECreT', {expiresIn: '5m'})
               return res.status(201).json({
                 message: 'Login successful',
                 email: user.email,
-                username: user.username
+                username: user.username,
+                token: token
               });
             } else { 
             // else return message of wrong password
@@ -118,7 +122,7 @@ app.post('/login', (req, res) => {
       res.status(401).json({message: 'No user found!, sign up instead'});
     }
   } catch(error) {
-    res.status(401).json(error);
+    res.status(500).json(error);
   }
 });
 
@@ -133,12 +137,30 @@ app.get('/getuser', (req, res) => {
         users = JSON.parse(`[${users}]`);
         let user = users.find(one => one.email === req.query.email);
         if (user) {
-          // if so return the user's email, date and time
-          return res.status(200).json({
-            email: user.email,
-            date: user.date,
-            time: user.time
-          });
+          // if so check the authorization for token matching
+          try {
+            // get the token from request headers
+            const token = req.headers.authorization.split(' ')[1];
+            const decodedToken = jwt.verify(token, 'RandoM_SECreT');
+            if (decodedToken.email === user.email) { 
+              // return the user's email, date and time
+              return res.status(200).json({
+                email: user.email,
+                date: user.date,
+                time: user.time
+              });
+            } else {
+              throw new Error('Invalid Request');
+            }
+          } catch(error) {
+            if (error.name === 'TokenExpiredError') {
+              return res.status(400).json({
+                message: 'Session expired, please login again'
+              });
+            } else {
+              return res.status(400).json({message: 'Invalid Request'});
+            }
+          }
         } else {
           // else return message that user with specified email was not found
           res.status(400).json({message: `User with email: ${req.query.email}, not found!`});
@@ -149,7 +171,7 @@ app.get('/getuser', (req, res) => {
       res.status(400).json({message: 'No users found!'});
     }
   } catch(error) {
-    res.status(400).json(error);
+    res.status(500).json(error);
   }
 })
 
