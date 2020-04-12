@@ -1,7 +1,5 @@
-const express = require('express');
-const app = express();
+const app = require('express')();
 const bodyParser = require('body-parser');
-const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./models/user');
@@ -69,7 +67,7 @@ app.post('/login', async (req, res) => {
     }
   } else {
     // return if no email or username is passed to the body
-    res.status(401).json({message: 'Please provide a valid email or username to login.'});
+    return res.status(401).json({message: 'Please provide a valid email or username to login.'});
   }
 
   // if a user was not found return the message that user was not found
@@ -103,52 +101,51 @@ app.post('/login', async (req, res) => {
 });
 
 // handle getuser 
-app.get('/getuser', (req, res) => {
+app.get('/getuser', async (req, res) => {
+  // ensures a valid email was passed as parameter 
+  if (!(req.query.email))
+    return res.status(400).json({message: 'Please pass a valid email as an email URL parameter'});
+
+  // retrieve the user from the database 
+  let user;
   try {
-    // check if the user's file storage exists 
-    if (fs.existsSync('users.json')) { 
-      // if so check if the email in req.body is found
-      fs.readFile('users.json', (err, users) => {
-        if (err) return res.status(401).json(err);
-        users = JSON.parse(`[${users}]`);
-        let user = users.find(one => one.email === req.query.email);
-        if (user) {
-          // if so check the authorization for token matching
-          try {
-            // get the token from request headers
-            const token = req.headers.authorization.split(' ')[1];
-            const decodedToken = jwt.verify(token, 'RandoM_SECreT');
-            if (decodedToken.email === user.email) { 
-              // return the user's email, date and time
-              return res.status(200).json({
-                email: user.email,
-                date: user.date,
-                time: user.time
-              });
-            } else {
-              throw new Error('Invalid Request');
-            }
-          } catch(error) {
-            if (error.name === 'TokenExpiredError') {
-              return res.status(400).json({
-                message: 'Session expired, please login again'
-              });
-            } else {
-              return res.status(400).json({message: 'Invalid Request'});
-            }
-          }
-        } else {
-          // else return message that user with specified email was not found
-          res.status(400).json({message: `User with email: ${req.query.email}, not found!`});
-        }
-      });
-    } else {      
-      // else return message that there are no users
-      res.status(400).json({message: 'No users found!'});
-    }
+   user = await User.findOne({email: req.query.email});
   } catch(error) {
     res.status(500).json(error);
   }
-})
+
+  // check if there's a valid user with the provided email was not returned from the database
+  if (!user) {
+    // if so return message that user with specified email was not found
+    res.status(400).json({message: `User with email: ${req.query.email}, not found!`});
+  } else { 
+    // if there's a user, check the authorization for token matching
+    try {
+      // get the token from request headers
+      const token = req.headers.authorization.split(' ')[1];
+      const decodedToken = jwt.verify(token, 'RandoM_SECreT');
+      if (decodedToken.email === user.email) { 
+        // return the user's email, date and time if they match
+        return res.status(200).json({
+          _id: user._id,
+          email: user.email,
+          username: user.username,
+          date: user.date,
+          time: user.time
+        });
+      } else {
+        throw new Error('Invalid Request');
+      }
+    } catch(error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(400).json({
+          message: 'Session expired, please login again'
+        });
+      } else {
+        return res.status(400).json({message: 'Invalid Request'});
+      }
+    }
+  }
+});
 
 module.exports = app.listen(port);
