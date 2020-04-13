@@ -172,4 +172,21 @@ app.delete('/deleteuser', auth, (req, res) => {
     .catch(err => res.status(500).json(err));
 });
 
+// gets all users 
+app.get('/', (req, res) => {
+  // get and return all users from database
+  User.find().then(users => {
+    users = users.map(user => {
+      return {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        date: user.date,
+        time: user.time
+      };
+    });
+    res.status(200).json({users: users});
+  }).catch(err => res.status(500).json(err));
+});
+
 module.exports = app.listen(port);
