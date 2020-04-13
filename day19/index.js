@@ -1,12 +1,13 @@
-const app = require('express')();
-const bodyParser = require('body-parser');
+const express = require('express');
+const app = express();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./models/user');
 const dateTime = require('./date-time');
+const auth = require('./middleware/auth');
 const port = 3000 || process.env.PORT;
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 // handle signup
 app.post('/signup', (req, res) => {
@@ -101,175 +102,74 @@ app.post('/login', async (req, res) => {
 });
 
 // handle getuser 
-app.get('/getuser', async (req, res) => {
-  // ensures a valid email was passed as parameter 
-  if (!(req.query.email))
-    return res.status(400).json({message: 'Please pass a valid email as an email URL parameter'});
+app.get('/getuser', auth, (req, res) => {
+  // get user from res.locals (set in auth middleware)
+  const user = res.locals.user;
 
-  // retrieve the user from the database 
-  let user;
-  try {
-   user = await User.findOne({email: req.query.email});
-  } catch(error) {
-    res.status(500).json(error);
-  }
-
-  // check if there's a valid user with the provided email was not returned from the database
-  if (!user) {
-    // if so return message that user with specified email was not found
-    res.status(400).json({message: `User with email: ${req.query.email}, not found!`});
-  } else { 
-    // if there's a user, check the authorization for token matching
-    try {
-      // get the token from request headers
-      const token = req.headers.authorization.split(' ')[1];
-      const decodedToken = jwt.verify(token, 'RandoM_SECreT');
-      if (decodedToken.email === user.email) { 
-        // return the user's email, date and time if they match
-        return res.status(200).json({
-          _id: user._id,
-          email: user.email,
-          username: user.username,
-          date: user.date,
-          time: user.time
-        });
-      } else {
-        throw new Error('Invalid Request');
-      }
-    } catch(error) {
-      if (error.name === 'TokenExpiredError') {
-        return res.status(400).json({
-          message: 'Session expired, please login again'
-        });
-      } else {
-        return res.status(400).json({message: 'Invalid Request'});
-      }
-    }
-  }
+  // return user info
+  res.status(200).json({
+    _id: user._id,
+    email: user.email,
+    username: user.username,
+    date: user.date,
+    time: user.time
+  });
 });
 
 // handle update user 
-app.put('/updateuser', async(req, res) => {
-  // ensures a valid email was passed as parameter 
-  if (!(req.query.email))
-    return res.status(400).json({message: 'Please pass a valid email as an email URL parameter'});
+app.put('/updateuser', auth, async(req, res) => {
+  // get user from res.locals (set in auth middleware)
+  const user = res.locals.user;
 
-  // retrieve the user from the database 
-  let user;
-  try {
-    user = await User.findOne({email: req.query.email});
-  } catch(error) {
-    res.status(500).json(error);
-  }
-
-  // check if there's a valid user with the provided email was not returned from the database
-  if (!user) {
-    // if so return message that user with specified email was not found
-    res.status(401).json({
-      message: `Cannot update because user with email: ${req.query.email}, not found!`
+  // if there's a user, check if the body has valid data to update with 
+  if (!(req.body.email || req.body.username || req.body.password)) { 
+    return res.status(401).json({
+      message: 'Please provide valid email, username or password to update in the user!'
     });
-  } else { 
-    // if there's a user, check if the body has valid data to update with 
-    if (!(req.body.email || req.body.username || req.body.password)) 
-      return res.status(401).json({
-        message: 'Please provide valid email, username or password to update in the user!'
-      });
-    // check the authorization for token matching
+  }
+    
+  // update with the provided body data
+  if (req.body.email) user.email = req.body.email;
+  if (req.body.username) user.username = req.body.username;
+  if (req.body.password) {
     try {
-      // get the token from request headers
-      const token = req.headers.authorization.split(' ')[1];
-      const decodedToken = jwt.verify(token, 'RandoM_SECreT');
-      if (decodedToken.email === user.email) { 
-        // update with the provided body data
-        if (req.body.email) user.email = req.body.email;
-        if (req.body.username) user.username = req.body.username;
-        if (req.body.password) {
-          try {
-            user.password = await bcrypt.hash(req.body.password, 10);
-          } catch(error) {
-            res.status(500).json(error);
-          }
-        }
-        user.save().then(updated => {
-          res.status(201).json({
-            message: 'Update Successful',
-            email: updated.email,
-            username: updated.username
-          });
-        }).catch(err => {
-          // check if username or email are not unique and return proper message
-          if (err.name === 'ValidationError') {
-            let messages = [];
-            for (let [key, value] of Object.entries(err.errors)) {
-              messages.push(`User with ${key}: ${value.value} exists already. Please use a different ${key}`);
-            }
-            const returnMessage = messages.join('\n').concat('.');
-            return res.status(401).json({message: returnMessage});
-          }
-          res.status(500).json(err)
-        });
-      } else {
-        throw new Error('Invalid Request');
-      }
+      user.password = await bcrypt.hash(req.body.password, 10);
     } catch(error) {
-      if (error.name === 'TokenExpiredError') {
-        return res.status(400).json({
-          message: 'Session expired, please login again'
-        });
-      } else {
-        return res.status(400).json({message: 'Invalid Request'});
-      }
+      res.status(500).json(error);
     }
   }
+  user.save().then(updated => {
+    res.status(201).json({
+      message: 'Update Successful',
+      email: updated.email,
+      username: updated.username
+    });
+  }).catch(err => {
+    // check if username or email are not unique and return proper message
+    if (err.name === 'ValidationError') {
+      let messages = [];
+      for (let [key, value] of Object.entries(err.errors)) {
+        messages.push(`User with ${key}: ${value.value} exists already. Please use a different ${key}`);
+      }
+      const returnMessage = messages.join('\n').concat('.');
+      return res.status(401).json({message: returnMessage});
+    }
+    res.status(500).json(err)
+  });
 });
 
 // handle delete user 
-app.delete('/deleteuser', async(req, res) => {
-  // ensures a valid email was passed as parameter 
-  if (!(req.query.email))
-    return res.status(400).json({message: 'Please pass a valid email as an email URL parameter'});
-  
-  // check if the user exist and retrieve the user from the database 
- let user;
-  try {
-   user = await User.findOne({email: req.query.email});
-  } catch(error) {
-    res.status(500).json(error);
-  }
+app.delete('/deleteuser', auth, (req, res) => {
+  // get user from res.locals (set in auth middleware)
+  const user = res.locals.user;
 
-  // check if there's a valid user with the provided email was not returned from the database
-  if (!user) {
-    // if so return message that user with specified email was not found
-    res.status(400).json({
-      message: `Cannot delete because user with email: ${req.query.email}, not found!`
-    });
-  } else { 
-    // if there's a user, check the authorization for token matching
-    try {
-      // get the token from request headers
-      const token = req.headers.authorization.split(' ')[1];
-      const decodedToken = jwt.verify(token, 'RandoM_SECreT');
-      if (decodedToken.email === user.email) { 
-        // delete the user  
-        User.deleteOne({email: user.email})
-          // return message saying user deleted
-          .then(() => res.status(200).json({
-            message: `Successfully Deleted user with email: ${user.email}`
-          }))
-          .catch(err => res.status(500).json(err));
-      } else {
-        throw new Error('Invalid Request');
-      }
-    } catch(error) {
-      if (error.name === 'TokenExpiredError') {
-        return res.status(400).json({
-          message: 'Session expired, please login again'
-        });
-      } else {
-        return res.status(400).json({message: 'Invalid Request'});
-      }
-    }
-  }
+  // delete the user  
+  User.deleteOne({email: user.email})
+    // return message saying user deleted
+    .then(() => res.status(200).json({
+      message: `Successfully Deleted user with email: ${user.email}`
+    }))
+    .catch(err => res.status(500).json(err));
 });
 
 module.exports = app.listen(port);
