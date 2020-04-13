@@ -2,21 +2,21 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 
 module.exports = async (req, res, next) => { 
-  if (!(req.query.email))
-    return res.status(400).json({message: 'Please pass a valid email as an email URL parameter'});
+  if (!(req.params.id))
+    return res.status(400).json({message: 'Please pass a valid id in the URL'});
 
   // retrieve the user from the database 
   let user;
   try {
-    user = await User.findOne({email: req.query.email});
+    user = await User.findOne({_id: req.params.id});
   } catch(error) {
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 
   // check if there's a valid user with the provided email was not returned from the database
   if (!user) {
     // if so return message that user with specified email was not found
-    res.status(400).json({message: `User with email: ${req.query.email}, not found!`});
+    return res.status(400).json({message: `User with _id: ${req.params.id}, not found!`});
   } else { 
     // if there's a user, check the authorization for token matching
     try {

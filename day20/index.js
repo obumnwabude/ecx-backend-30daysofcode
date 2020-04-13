@@ -35,6 +35,7 @@ app.post('/signup', (req, res) => {
       user.save()
         .then(() => res.status(201).json({
           message: 'User successfully created!',
+          _id: user._id,
           email: user.email,
           username: user.username 
         }))
@@ -94,6 +95,7 @@ app.post('/login', async (req, res) => {
         const token = jwt.sign({email: user.email}, 'RandoM_SECreT', {expiresIn: '15m'});
         return res.status(201).json({
           message: 'Login successful!',
+          _id: user._id,
           email: user.email,
           username: user.username,
           token: token
@@ -107,7 +109,7 @@ app.post('/login', async (req, res) => {
 });
 
 // handle getuser 
-app.get('/getuser', auth, (req, res) => {
+app.get('/getuser/:id', auth, (req, res) => {
   // get user from res.locals (set in auth middleware)
   const user = res.locals.user;
 
@@ -123,7 +125,7 @@ app.get('/getuser', auth, (req, res) => {
 });
 
 // handle update user 
-app.put('/updateuser', auth, async(req, res) => {
+app.put('/updateuser/:id', auth, async(req, res) => {
   // get user from res.locals (set in auth middleware)
   const user = res.locals.user;
 
@@ -150,6 +152,7 @@ app.put('/updateuser', auth, async(req, res) => {
   user.save().then(updated => {
     res.status(201).json({
       message: 'Update Successful',
+      _id: updated._id,
       email: updated.email,
       username: updated.username
     });
@@ -168,15 +171,15 @@ app.put('/updateuser', auth, async(req, res) => {
 });
 
 // handle delete user 
-app.delete('/deleteuser', auth, (req, res) => {
+app.delete('/deleteuser/:id', auth, (req, res) => {
   // get user from res.locals (set in auth middleware)
   const user = res.locals.user;
 
   // delete the user  
-  User.deleteOne({email: user.email})
+  User.deleteOne({_id: user._id})
     // return message saying user deleted
     .then(() => res.status(200).json({
-      message: `Successfully Deleted user with email: ${user.email}`
+      message: `Successfully Deleted user with _id: ${user._id}`
     }))
     .catch(err => res.status(500).json(err));
 });
