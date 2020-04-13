@@ -27,8 +27,9 @@ app.post('/signup', (req, res) => {
         email: req.body.email,
         username: req.body.username,
         password: hashed,
-        date: dateTime(),
-        time: dateTime()
+        names: req.body.names || [],
+        occupation: req.body.occupation || '',
+        lastlogin: dateTime()
       });
       // save and return the user
       user.save()
@@ -86,14 +87,18 @@ app.post('/login', async (req, res) => {
     .then(valid => {
     // if passwords match return succesful login message with token
     if (valid) { 
-      // token signing
-      const token = jwt.sign({email: user.email}, 'RandoM_SECreT', {expiresIn: '15m'})
-      return res.status(201).json({
-        message: 'Login successful!',
-        email: user.email,
-        username: user.username,
-        token: token
-      });
+      // update lastlogin
+      user.lastlogin = dateTime();
+      user.save().then(user => { 
+        // token signing
+        const token = jwt.sign({email: user.email}, 'RandoM_SECreT', {expiresIn: '15m'});
+        return res.status(201).json({
+          message: 'Login successful!',
+          email: user.email,
+          username: user.username,
+          token: token
+        });
+      }).catch(err => res.status(500).json(err));
     } else { 
      // else return message of wrong password
       return res.status(401).json({message: 'Wrong password, please login with correct password.'});
@@ -111,8 +116,9 @@ app.get('/getuser', auth, (req, res) => {
     _id: user._id,
     email: user.email,
     username: user.username,
-    date: user.date,
-    time: user.time
+    names: user.names,
+    occupation: user.occupation,
+    lastlogin: user.lastlogin
   });
 });
 
@@ -122,9 +128,10 @@ app.put('/updateuser', auth, async(req, res) => {
   const user = res.locals.user;
 
   // if there's a user, check if the body has valid data to update with 
-  if (!(req.body.email || req.body.username || req.body.password)) { 
+  if (!(req.body.email || req.body.username || req.body.password 
+    || req.body.names || req.body.occupation)) { 
     return res.status(401).json({
-      message: 'Please provide valid email, username or password to update in the user!'
+      message: 'Please provide valid email, username, password, names or occupation to update in the user!'
     });
   }
     
@@ -138,6 +145,8 @@ app.put('/updateuser', auth, async(req, res) => {
       res.status(500).json(error);
     }
   }
+  if (req.body.names) user.names = req.body.names;
+  if (req.body.occupation) user.occupation = req.body.occupation;
   user.save().then(updated => {
     res.status(201).json({
       message: 'Update Successful',
@@ -181,8 +190,9 @@ app.get('/', (req, res) => {
         _id: user._id,
         email: user.email,
         username: user.username,
-        date: user.date,
-        time: user.time
+        names: user.names,
+        occupation: user.occupation,
+        lastlogin: user.lastlogin
       };
     });
     res.status(200).json({users: users});
