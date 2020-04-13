@@ -148,6 +148,81 @@ app.get('/getuser', async (req, res) => {
   }
 });
 
+// handle update user 
+app.put('/updateuser', async(req, res) => {
+  // ensures a valid email was passed as parameter 
+  if (!(req.query.email))
+    return res.status(400).json({message: 'Please pass a valid email as an email URL parameter'});
+
+  // retrieve the user from the database 
+  let user;
+  try {
+    user = await User.findOne({email: req.query.email});
+  } catch(error) {
+    res.status(500).json(error);
+  }
+
+  // check if there's a valid user with the provided email was not returned from the database
+  if (!user) {
+    // if so return message that user with specified email was not found
+    res.status(401).json({
+      message: `Cannot update because user with email: ${req.query.email}, not found!`
+    });
+  } else { 
+    // if there's a user, check if the body has valid data to update with 
+    if (!(req.body.email || req.body.username || req.body.password)) 
+      return res.status(401).json({
+        message: 'Please provide valid email, username or password to update in the user!'
+      });
+    // check the authorization for token matching
+    try {
+      // get the token from request headers
+      const token = req.headers.authorization.split(' ')[1];
+      const decodedToken = jwt.verify(token, 'RandoM_SECreT');
+      if (decodedToken.email === user.email) { 
+        // update with the provided body data
+        if (req.body.email) user.email = req.body.email;
+        if (req.body.username) user.username = req.body.username;
+        if (req.body.password) {
+          try {
+            user.password = await bcrypt.hash(req.body.password, 10);
+          } catch(error) {
+            res.status(500).json(error);
+          }
+        }
+        user.save().then(updated => {
+          res.status(201).json({
+            message: 'Update Successful',
+            email: updated.email,
+            username: updated.username
+          });
+        }).catch(err => {
+          // check if username or email are not unique and return proper message
+          if (err.name === 'ValidationError') {
+            let messages = [];
+            for (let [key, value] of Object.entries(err.errors)) {
+              messages.push(`User with ${key}: ${value.value} exists already. Please use a different ${key}`);
+            }
+            const returnMessage = messages.join('\n').concat('.');
+            return res.status(401).json({message: returnMessage});
+          }
+          res.status(500).json(err)
+        });
+      } else {
+        throw new Error('Invalid Request');
+      }
+    } catch(error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(400).json({
+          message: 'Session expired, please login again'
+        });
+      } else {
+        return res.status(400).json({message: 'Invalid Request'});
+      }
+    }
+  }
+});
+
 // handle delete user 
 app.delete('/deleteuser', async(req, res) => {
   // ensures a valid email was passed as parameter 
