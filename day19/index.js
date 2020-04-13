@@ -148,4 +148,53 @@ app.get('/getuser', async (req, res) => {
   }
 });
 
+// handle delete user 
+app.delete('/deleteuser', async(req, res) => {
+  // ensures a valid email was passed as parameter 
+  if (!(req.query.email))
+    return res.status(400).json({message: 'Please pass a valid email as an email URL parameter'});
+  
+  // check if the user exist and retrieve the user from the database 
+ let user;
+  try {
+   user = await User.findOne({email: req.query.email});
+  } catch(error) {
+    res.status(500).json(error);
+  }
+
+  // check if there's a valid user with the provided email was not returned from the database
+  if (!user) {
+    // if so return message that user with specified email was not found
+    res.status(400).json({
+      message: `Cannot delete because user with email: ${req.query.email}, not found!`
+    });
+  } else { 
+    // if there's a user, check the authorization for token matching
+    try {
+      // get the token from request headers
+      const token = req.headers.authorization.split(' ')[1];
+      const decodedToken = jwt.verify(token, 'RandoM_SECreT');
+      if (decodedToken.email === user.email) { 
+        // delete the user  
+        User.deleteOne({email: user.email})
+          // return message saying user deleted
+          .then(() => res.status(200).json({
+            message: `Successfully Deleted user with email: ${user.email}`
+          }))
+          .catch(err => res.status(500).json(err));
+      } else {
+        throw new Error('Invalid Request');
+      }
+    } catch(error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(400).json({
+          message: 'Session expired, please login again'
+        });
+      } else {
+        return res.status(400).json({message: 'Invalid Request'});
+      }
+    }
+  }
+});
+
 module.exports = app.listen(port);
