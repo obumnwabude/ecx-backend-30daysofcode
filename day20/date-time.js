@@ -3,7 +3,7 @@
  * @author Obumuneme Nwabude
  * @return {string} The current date in the format DD-MM-YYYY
  */
-exports.date = () => {
+const getDate = () => {
   // get the current date 
   let dates = (new Intl.DateTimeFormat('en-GB')).format(new Date()).split('/');
 
@@ -25,7 +25,7 @@ exports.date = () => {
  * @author Obumuneme Nwabude
  * @return {string} The current time in the format HH:MMam/pm
  */
-exports.time = () => {
+const getTime = () => {
   // get the current time 
   const times = (new Intl.DateTimeFormat('en', {
     hour:'numeric', 
@@ -43,3 +43,10 @@ exports.time = () => {
   // return the time, formatted as required
   return times.join('');
 };
+
+/**
+ * Returns date and time as a string in the format DD-MM-YYYY-HH:MMam/pm
+ * @author Obumuneme Nwabude
+ * @return {string} The current date and time 
+ */
+module.exports = () => `${getDate()}-${getTime()}`;

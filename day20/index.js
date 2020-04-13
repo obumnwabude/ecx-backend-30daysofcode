@@ -27,8 +27,8 @@ app.post('/signup', (req, res) => {
         email: req.body.email,
         username: req.body.username,
         password: hashed,
-        date: dateTime.date(),
-        time: dateTime.time()
+        date: dateTime(),
+        time: dateTime()
       });
       // save and return the user
       user.save()
