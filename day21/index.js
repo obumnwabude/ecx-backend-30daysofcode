@@ -2,13 +2,16 @@ const express = require('express');
 const app = express();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const morgan = require('morgan');
 const User = require('./models/user');
-const dateTime = require('./date-time');
 const auth = require('./middleware/auth');
+const dateTime = require('./date-time');
 const port = 3000 || process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
+
+app.use(morgan(':method :url :status :response-time ms'));
 
 // handle signup
 app.post('/signup', (req, res) => {
