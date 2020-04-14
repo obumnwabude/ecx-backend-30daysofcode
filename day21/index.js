@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const morgan = require('morgan');
 const User = require('./models/user');
+const Logger = require('./models/logger');
 const auth = require('./middleware/auth');
 const dateTime = require('./date-time');
 const port = 3000 || process.env.PORT;
@@ -12,8 +13,13 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 // the logger
-let logs = '';
-const log = { write: line => logs += line }
+const logger = new Logger({logs: ''});
+const log = { 
+  write: line => {
+    logger.logs += line;
+    logger.save().then(() => {}).catch(err => console.log(err));
+  }
+};
 
 // morgan middleware for logging
 app.use(morgan(':method :url :status :response-time ms', {stream: log}));
@@ -21,7 +27,7 @@ app.use(morgan(':method :url :status :response-time ms', {stream: log}));
 // handle logs 
 app.get('/logs', (req, res) => {
   res.format({
-    'text/plain': () => res.status(200).send(logs)
+    'text/plain': () => res.status(200).send(logger.logs)
   });
 });
 
