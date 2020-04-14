@@ -11,7 +11,19 @@ const port = 3000 || process.env.PORT;
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
-app.use(morgan(':method :url :status :response-time ms'));
+// the logger
+let logs = '';
+const log = { write: line => logs += line }
+
+// morgan middleware for logging
+app.use(morgan(':method :url :status :response-time ms', {stream: log}));
+
+// handle logs 
+app.get('/logs', (req, res) => {
+  res.format({
+    'text/plain': () => res.status(200).send(logs)
+  });
+});
 
 // handle signup
 app.post('/signup', (req, res) => {
