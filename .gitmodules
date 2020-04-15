@@ -1,0 +1,3 @@
+[submodule "day22"]
+	path = day22
+	url = 'https://github.com/obumnwabude/live-server.git'
