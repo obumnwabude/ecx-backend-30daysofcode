@@ -1,3 +1,6 @@
 [submodule "day22"]
 	path = day22
 	url = https://github.com/obumnwabude/live-server.git
+[submodule "day23"]
+	path = day23
+	url = https://github.com/obumnwabude/nodecoin
