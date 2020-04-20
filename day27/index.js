@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const Logger = require('./models/logger');
 const indexRoutes = require('./routes/index');
+const userRoutes = require('./routes/user');
 const port = process.env.PORT || 3000;
 
 // connect to mongodb
@@ -29,5 +30,6 @@ const logStream = {
 app.use(morgan(':method :url :status :response-time ms', {stream: logStream}));
 
 app.use('/', indexRoutes);
+app.use('/users', userRoutes);
 
 module.exports = app.listen(port);
