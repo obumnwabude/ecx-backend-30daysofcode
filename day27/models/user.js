@@ -21,6 +21,6 @@ module.exports = mongoose.model('User', new mongoose.Schema({
   },
   dateCreated: { type: Date, default: new Date() },
   lastLogin: { type: Date, default: new Date() },
-  verified: Boolean,
+  verified: { type: Boolean, default: false },
   addresses: [addressSchema]
 }).plugin(uniqueValidator));

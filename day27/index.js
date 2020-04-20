@@ -18,6 +18,10 @@ mongoose.connect('mongodb+srv://obum:24PFP3g7v6idbhcM@cluster0-kfvs4.gcp.mongodb
     console.error(error);
   });
 
+// accept body data
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
 // a logger to save logs to database
 const logStream = { 
   write: line => {
