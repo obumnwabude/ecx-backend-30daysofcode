@@ -3,6 +3,7 @@ const app = express();
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const Logger = require('./models/logger');
+const indexRoutes = require('./routes/index');
 const port = process.env.PORT || 3000;
 
 // connect to mongodb
@@ -27,16 +28,6 @@ const logStream = {
 // morgan middleware for logging
 app.use(morgan(':method :url :status :response-time ms', {stream: logStream}));
 
-app.get('/', (req, res) => {
-  res.status(200).send('server working');
-});
-
-app.get('/logs', (req, res) => {
-  Logger.find({}).then(logs => {
-    res.format({
-      'text/plain': () => res.status(200).send(logs.map(log => log.log).join(''))
-    });
-  }).catch(err => res.status(500).json(err));
-})
+app.use('/', indexRoutes);
 
 module.exports = app.listen(port);
