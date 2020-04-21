@@ -1,4 +1,5 @@
 const Store = require('../models/store');
+const User = require('../models/user');
 
 exports.getAllStores = (req, res, next) => {
   Store.find({})
@@ -52,23 +53,42 @@ exports.getStore = (req, res, next) => {
   res.status(200).json(res.locals.store);
 };
 
-exports.updateStore = (req, res, next) => {
+exports.updateStore = async (req, res, next) => {
   // obtain store from res.locals
   const store = res.locals.store;
 
-  // return if userId is found in body
-  if (req.body.userId) 
-    return res.status(401).json({message: 'Found userId in request body. You cannot change the creator of a store'});
-
   // check and ensure that there is something to be updated in the store from request body
-  if (!(req.body.name || req.body.email || req.body.description || req.body.verified
-   || req.body.suspended || req.body.address || req.body.category || req.body.logo 
-   || req.body.phone || req.body.banner)) { 
+  if (!(req.body.userId || req.body.name || req.body.email || req.body.description
+   || req.body.verified || req.body.suspended || req.body.address || req.body.category 
+   || req.body.logo || req.body.phone || req.body.banner)) { 
     return res.status(401).json({
-      message: 'Please provide valid name, email, description, verified, suspended, address, category, logo, phone or banner to update with'
+      message: 'Please provide valid userId, name, email, description, verified, suspended, address, category, logo, phone or banner to update with'
     });
   }
     
+  if (req.body.userId) {
+    // handle user transfers   
+    let user;
+    try {
+      user = await User.findOne({_id: req.body.userId});
+    } catch {
+      return res.status(500).json(error);
+    }
+    // check if no user was found and return 
+    if (!user) {
+      return res.status(400).json({
+        message: `Can't update the owner of the store with store _id: ${req.params.id} because no user with userId: ${req.body.userId} was not found.`
+      });
+    } else { 
+      // ensure that the user is of admin type else return 
+      if (user.userType !== 'ADMIN') {
+        return res.status(401).json({message: `Cannot transfer ownership of this store to user with userId: ${req.body.userId} because they are not an ADMIN`});
+      } else {
+        store.userId = user._id;
+      }
+    }
+  }
+
   // update with the provided body data
   if (req.body.name) store.name = req.body.name;
   if (req.body.email) store.email = req.body.email;
