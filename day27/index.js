@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Logger = require('./models/logger');
 const indexRoutes = require('./routes/index');
 const userRoutes = require('./routes/user');
+const storeRoutes = require('./routes/store');
 const port = process.env.PORT || 3000;
 
 // connect to mongodb
@@ -35,5 +36,6 @@ app.use(morgan(':method :url :status :response-time ms', {stream: logStream}));
 
 app.use('/', indexRoutes);
 app.use('/user', userRoutes);
+app.use('/store', storeRoutes);
 
 module.exports = app.listen(port);
