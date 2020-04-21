@@ -2,22 +2,6 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.getUser = (req, res, next) => {
-  // the user from res.locals 
-  const user = res.locals.user;
-  res.status(200).json({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    userType: user.userType,
-    dateCreated: user.dateCreated,
-    lastLogin: user.lastLogin,
-    verified: user.verified,
-    addresses: user.addresses
-  });
-};
-
 exports.createUser = (req, res, next) => {
   // ensures that at least name, email, and password are provided
   if (!(req.body.name)) 
@@ -100,6 +84,22 @@ exports.loginUser = (req, res, next) => {
           }).catch(error => res.status(500).json(error));
       }
     }).catch(error => res.status(500).json(error));
+};
+
+exports.getUser = (req, res, next) => {
+  // the user from res.locals 
+  const user = res.locals.user;
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    userType: user.userType,
+    dateCreated: user.dateCreated,
+    lastLogin: user.lastLogin,
+    verified: user.verified,
+    addresses: user.addresses
+  });
 };
 
 exports.updateUser = async (req, res, next) => {

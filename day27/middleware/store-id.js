@@ -1,5 +1,5 @@
 const Store = require('../models/store');
-const User = require('../models/store');
+const User = require('../models/user');
 
 module.exports = (req, res, next) => {
   // retrieve store in database

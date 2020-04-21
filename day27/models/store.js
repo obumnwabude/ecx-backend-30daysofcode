@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const addressSchema = require('./address');
 
 module.exports = mongoose.model('Store', new mongoose.Schema({
-  userId:  {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+  userId:  {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
   name: { type: String, required: true },
   email: { type: String, required: true },
   description: String,
