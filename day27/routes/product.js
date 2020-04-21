@@ -7,7 +7,7 @@ const productId = require('../middleware/product-id');
 
 router.get('/', productCtrl.getAllProducts);
 router.post('/', storeId, auth, productCtrl.createProduct);
-router.get('/:id', productId, productCtrl.getProduct);
+router.get('/:id', productId, storeId, auth, productCtrl.getProduct);
 router.put('/:id', productId, storeId, auth, productCtrl.updateProduct);
 router.delete('/:id', productId, storeId, auth, productCtrl.deleteProduct);
 

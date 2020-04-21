@@ -6,7 +6,7 @@ const storeId = require('../middleware/store-id');
 
 router.get('/', storeCtrl.getAllStores);
 router.post('/', userId, auth, storeCtrl.createStore);
-router.get('/:id', storeId, storeCtrl.getStore);
+router.get('/:id', storeId, auth, storeCtrl.getStore);
 router.put('/:id', storeId, auth, storeCtrl.updateStore);
 router.delete('/:id', storeId, auth, storeCtrl.deleteStore);
 
