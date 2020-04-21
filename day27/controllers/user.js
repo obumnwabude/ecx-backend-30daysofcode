@@ -148,3 +148,9 @@ exports.updateUser = async (req, res, next) => {
     res.status(500).json(error);
   });
 };
+
+exports.deleteUser = (req, res, next) => {
+  res.locals.user.delete()
+    .then(() => res.status(204).end())
+    .catch(error => res.status(500).json(error));
+};
