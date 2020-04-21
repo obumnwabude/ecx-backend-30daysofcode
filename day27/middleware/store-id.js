@@ -2,12 +2,17 @@ const Store = require('../models/store');
 const User = require('../models/user');
 
 module.exports = (req, res, next) => {
+  // where to get the id from
+  let storeId;
+  if (res.locals.product != undefined) storeId = res.locals.product.storeId
+  else if (req.body.storeId) storeId = req.body.storeId
+  else storeId = req.params.id
   // retrieve store in database
-  Store.findOne({_id: res.locals.product.storeId || req.body.storeId || req.params.id})
+  Store.findOne({_id: storeId})
     .then(async store => {
       // if no store was found return 
       if (!store) {
-        return res.status(400).json({message: `Store with _id: ${res.locals.product.storeId || req.body.storeId || req.params.id} not found.`});
+        return res.status(400).json({message: `Store with _id: ${storeId} not found.`});
       } else {
         // retrieve user with userId in store 
         let user;
@@ -19,7 +24,7 @@ module.exports = (req, res, next) => {
         // check if no user was found and return 
         if (!user) {
           return res.status(400).json({
-            message: `Can't access the store with store _id: ${res.locals.product.storeId || req.body.storeId || req.params.id} because its creator with userId: ${store.userId} was not found.`
+            message: `Can't access the store with store _id: ${storeId} because its creator with userId: ${store.userId} was not found.`
           });
         } else {
           // save user and store on res.locals 

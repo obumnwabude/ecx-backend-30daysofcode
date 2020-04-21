@@ -26,7 +26,7 @@ exports.createProduct = (req, res, next) => {
     if (isNaN(req.body.price)) {
       return res.status(401).json({message: 'The price must be a numeric value'});
     } else if (req.body.price < 1) {
-      return res.status(401).json({message: 'The price must be greater than 1'});
+      return res.status(401).json({message: 'The price must be greater than 0'});
     }
   }
   // for quantity
@@ -34,7 +34,7 @@ exports.createProduct = (req, res, next) => {
     if (isNaN(req.body.quantity)) {
       return res.status(401).json({message: 'The quantity must be a numeric value'});
     } else if (req.body.quantity < 1) {
-      return res.status(401).json({message: 'The quantity must be greater than 1'});
+      return res.status(401).json({message: 'The quantity must be greater than 0'});
     }
   }
   // for discountPrice
@@ -42,7 +42,7 @@ exports.createProduct = (req, res, next) => {
     if (isNaN(req.body.discountPrice)) {
       return res.status(401).json({message: 'The discountPrice must be a numeric value'});
     } else if (req.body.discountPrice < 0) {
-      return res.status(401).json({message: 'The discountPrice must be greater than 0'});
+      return res.status(401).json({message: 'The discountPrice must be greater than or equal to 0'});
     }
   }
   // for inStock
@@ -50,7 +50,7 @@ exports.createProduct = (req, res, next) => {
     if (isNaN(req.body.inStock)) {
       return res.status(401).json({message: 'The inStock must be a numeric value'});
     } else if (req.body.inStock < 1) {
-      return res.status(401).json({message: 'The inStock must be greater than 1'});
+      return res.status(401).json({message: 'The inStock must be greater than 0'});
     }
   }
 
@@ -107,7 +107,7 @@ exports.updateProduct = async (req, res, next) => {
     if (isNaN(req.body.price)) {
       return res.status(401).json({message: 'The price must be a numeric value'});
     } else if (req.body.price < 1) {
-      return res.status(401).json({message: 'The price must be greater than 1'});
+      return res.status(401).json({message: 'The price must be greater than 0'});
     } else product.price = req.body.price;
   }
   // for quantity
@@ -167,5 +167,10 @@ exports.updateProduct = async (req, res, next) => {
       product: updated
     });
   }).catch(error => res.status(500).json(error));
+};
 
+exports.deleteProduct = (req, res, next) => {
+  res.locals.product.delete()
+    .then(() => res.status(204).end())
+    .catch(error => res.status(500).json(error));
 };
