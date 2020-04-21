@@ -1,5 +1,4 @@
 const Store = require('../models/store');
-const User = require('../models/user');
 
 exports.getAllStores = (req, res, next) => {
   Store.find({})
@@ -51,4 +50,42 @@ exports.createStore = async (req, res, next) => {
 
 exports.getStore = (req, res, next) => {
   res.status(200).json(res.locals.store);
-}
+};
+
+exports.updateStore = (req, res, next) => {
+  // obtain store from res.locals
+  const store = res.locals.store;
+
+  // return if userId is found in body
+  if (req.body.userId) 
+    return res.status(401).json({message: 'Found userId in request body. You cannot change the creator of a store'});
+
+  // check and ensure that there is something to be updated in the store from request body
+  if (!(req.body.name || req.body.email || req.body.description || req.body.verified
+   || req.body.suspended || req.body.address || req.body.category || req.body.logo 
+   || req.body.phone || req.body.banner)) { 
+    return res.status(401).json({
+      message: 'Please provide valid name, email, description, verified, suspended, address, category, logo, phone or banner to update with'
+    });
+  }
+    
+  // update with the provided body data
+  if (req.body.name) store.name = req.body.name;
+  if (req.body.email) store.email = req.body.email;
+  if (req.body.description) store.description = req.body.description;
+  if (req.body.verified) store.verified = req.body.verified;
+  if (req.body.suspended) store.suspended = req.body.suspended;
+  if (req.body.address) store.address = req.body.address;
+  if (req.body.category) store.category = req.body.category;
+  if (req.body.logo) store.logo = req.body.logo;
+  if (req.body.phone) store.phone = req.body.phone;
+  if (req.body.banner) store.banner = req.body.banner;
+
+  // save the updated store and return it 
+  store.save().then(updated => {
+    res.status(201).json({
+      message: 'Update Successful',
+      store: updated
+    });
+  }).catch(error => res.status(500).json(error));
+};
