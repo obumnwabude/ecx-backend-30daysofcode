@@ -20,6 +20,6 @@ module.exports = mongoose.model('Product', new mongoose.Schema({
   description: {type: String, required: true},
   images: imageSchema,
   category: String,
-  inStock: Number,
+  inStock: {type: Number, required: true},
   variations: Array
 }));
