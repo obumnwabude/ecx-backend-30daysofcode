@@ -34,6 +34,6 @@ const logStream = {
 app.use(morgan(':method :url :status :response-time ms', {stream: logStream}));
 
 app.use('/', indexRoutes);
-app.use('/users', userRoutes);
+app.use('/user', userRoutes);
 
 module.exports = app.listen(port);

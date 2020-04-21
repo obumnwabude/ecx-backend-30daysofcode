@@ -2,6 +2,22 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+exports.getUser = (req, res, next) => {
+  // the user from res.locals 
+  const user = res.locals.user;
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    userType: user.userType,
+    dateCreated: user.dateCreated,
+    lastLogin: user.lastLogin,
+    verified: user.verified,
+    addresses: user.addresses
+  });
+};
+
 exports.loginUser = (req, res, next) => {
   // ensure that email and password for login were found in body else return
   if (!(req.body.email)) 
@@ -23,14 +39,18 @@ exports.loginUser = (req, res, next) => {
             if (!valid) {
               return res.status(401).json({message: 'Wrong password'});
             } else {
-              // if passwords match, sign token with email and return
-              const token = jwt.sign({email: user.email}, 'random', {expiresIn: '3h'});
-              res.status(201).json({
-                message: 'Login Successful',
-                _id: user._id,
-                email: user.email,
-                token: token
-              });
+              // update login time on user 
+              user.lastLogin = new Date();
+              user.save().then(() => {
+                // if passwords match, sign token with email and return
+                const token = jwt.sign({email: user.email}, 'random', {expiresIn: '3h'});
+                res.status(201).json({
+                  message: 'Login Successful',
+                  _id: user._id,
+                  email: user.email,
+                  token: token
+                });
+              }).catch(error => res.status(500).json(error));
             }
           }).catch(error => res.status(500).json(error));
       }
