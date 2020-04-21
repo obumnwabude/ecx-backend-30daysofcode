@@ -3,11 +3,11 @@ const User = require('../models/user');
 
 module.exports = (req, res, next) => {
   // retrieve store in database
-  Store.findOne({_id: req.params.id})
+  Store.findOne({_id: req.body.storeId || req.params.id})
     .then(async store => {
       // if no store was found return 
       if (!store) {
-        return res.status(400).json({message: `Store with _id: ${req.params.id} not found.`});
+        return res.status(400).json({message: `Store with _id: ${req.body.storeId || req.params.id} not found.`});
       } else {
         // retrieve user with userId in store 
         let user;
@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
         // check if no user was found and return 
         if (!user) {
           return res.status(400).json({
-            message: `Can't access the store with store _id: ${req.params.id} because its creator with userId: ${store.userId} was not found.`
+            message: `Can't access the store with store _id: ${req.body.storeId || req.params.id} because its creator with userId: ${store.userId} was not found.`
           });
         } else {
           // save user and store on res.locals 
@@ -31,7 +31,7 @@ module.exports = (req, res, next) => {
       }
     }).catch(error => {
       if (error.name === 'CastError') 
-        return res.status(400).json({message: `Invalid Store ID: ${req.params.id} in URL`});
+        return res.status(400).json({message: `Invalid Store ID: ${req.body.storeId || req.params.id}`});
       res.status(500).json(error);
     });
 };

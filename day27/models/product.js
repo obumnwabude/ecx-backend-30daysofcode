@@ -18,7 +18,7 @@ module.exports = mongoose.model('Product', new mongoose.Schema({
   price: {type: Number, required: true},
   discountPrice: Number,
   description: {type: String, required: true},
-  images: [imageSchema],
+  images: imageSchema,
   category: String,
   inStock: Number,
   variations: Array

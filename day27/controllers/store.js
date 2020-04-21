@@ -7,7 +7,7 @@ exports.getAllStores = (req, res, next) => {
     .catch(error => res.status(500).json(error));
 };
 
-exports.createStore = async (req, res, next) => {
+exports.createStore = (req, res, next) => {
   // ensures that at least name and email, are provided
   if (!(req.body.name)) 
     return res.status(401).json({message: 'Please provide a valid name'});
