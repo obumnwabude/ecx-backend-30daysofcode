@@ -8,5 +8,6 @@ router.get('/', storeCtrl.getAllStores);
 router.post('/', userId, auth, storeCtrl.createStore);
 router.get('/:id', storeId, storeCtrl.getStore);
 router.put('/:id', storeId, auth, storeCtrl.updateStore);
+router.delete('/:id', storeId, auth, storeCtrl.deleteStore);
 
 module.exports = router;

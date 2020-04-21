@@ -89,3 +89,9 @@ exports.updateStore = (req, res, next) => {
     });
   }).catch(error => res.status(500).json(error));
 };
+
+exports.deleteStore = (req, res, next) => {
+  res.locals.store.delete()
+    .then(() => res.status(204).end())
+    .catch(error => res.status(500).json(error));
+};
