@@ -38,7 +38,13 @@ exports.createUser = (req, res, next) => {
         password: hashed,
         addresses: req.body.addresses || []
       });
-      if (req.body.userType) user.userType = req.body.userType;
+      if (req.body.userType) {
+        if (req.body.userType == 'USER' || req.body.userType == 'ADMIN') {
+          user.userType = req.body.userType;
+        } else {
+          return res.status(401).json({message: 'userType can only be \'USER\' or \'ADMIN\''});
+        }
+      }
       if (req.body.verified) user.verified = req.body.verified;
       // save and return the user
       user.save()
@@ -119,10 +125,10 @@ exports.updateUser = async (req, res, next) => {
     }
   }
   if (req.body.userType) {
-    if (req.body.userType.toUpperCase() !== 'USER' || req.body.userType.toUpperCase() !== 'ADMIN') {
-      return res.status(401).json({message: 'userType can only be \'USER\' or \'ADMIN\''});
-    } else {
+    if (req.body.userType == 'USER' || req.body.userType == 'ADMIN') {
       user.userType = req.body.userType;
+    } else {
+      return res.status(401).json({message: 'userType can only be \'USER\' or \'ADMIN\''});
     }
   }
   if (req.body.verified) user.verified = req.body.verified;
