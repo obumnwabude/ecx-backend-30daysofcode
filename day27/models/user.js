@@ -1,18 +1,11 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
-
-const addressSchema = new mongoose.Schema({
-  street: String,
-  state: Number, 
-  city: String, 
-  zipcode: String, 
-  country: String
-});
+const addressSchema = require('./address');
 
 module.exports = mongoose.model('User', new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  phoneNumber: String,
+  phone: String,
   password: { type: String, required: true },
   userType: {
     type: String,

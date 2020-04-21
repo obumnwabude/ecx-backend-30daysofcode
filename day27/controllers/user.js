@@ -9,7 +9,7 @@ exports.getUser = (req, res, next) => {
     _id: user._id,
     name: user.name,
     email: user.email,
-    phoneNumber: user.phoneNumber,
+    phone: user.phone,
     userType: user.userType,
     dateCreated: user.dateCreated,
     lastLogin: user.lastLogin,
@@ -34,7 +34,7 @@ exports.createUser = (req, res, next) => {
       const user = new User({
         name: req.body.name,
         email: req.body.email,
-        phoneNumber: req.body.phoneNumber || '',
+        phone: req.body.phone || '',
         password: hashed,
         addresses: req.body.addresses || []
       });
@@ -100,17 +100,17 @@ exports.updateUser = async (req, res, next) => {
   // get user to be updated from res.locals 
   const user = res.locals.user;
   // check and ensure that there is something to be updated in the user from request body
-  if (!(req.body.name || req.body.email || req.body.phoneNumber || req.body.password
+  if (!(req.body.name || req.body.email || req.body.phone || req.body.password
    || req.body.userType || req.body.verified || req.body.addresses)) { 
     return res.status(401).json({
-      message: 'Please provide valid name, email, phoneNumber, passsword, userType, verified or addresses to update with'
+      message: 'Please provide valid name, email, phone, passsword, userType, verified or addresses to update with'
     });
   }
     
   // update with the provided body data
   if (req.body.name) user.name = req.body.name;
   if (req.body.email) user.email = req.body.email;
-  if (req.body.phoneNumber) user.phoneNumber = req.body.phoneNumber;
+  if (req.body.phone) user.phone = req.body.phone;
   if (req.body.password) {
     try {
       user.password = await bcrypt.hash(req.body.password, 10);
@@ -135,7 +135,7 @@ exports.updateUser = async (req, res, next) => {
       _id: updated._id,
       name: updated.name,
       email: updated.email,
-      phoneNumber: updated.phoneNumber,
+      phone: updated.phone,
       userType: updated.userType,
       verified: user.verified,
       addresses: user.addresses
