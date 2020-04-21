@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Store = require('../models/store');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -23,7 +24,7 @@ exports.createUser = (req, res, next) => {
         addresses: req.body.addresses || []
       });
       if (req.body.userType) {
-        if (req.body.userType == 'USER' || req.body.userType == 'ADMIN') {
+        if (req.body.userType === 'USER' || req.body.userType === 'ADMIN') {
           user.userType = req.body.userType;
         } else {
           return res.status(401).json({message: 'userType can only be \'USER\' or \'ADMIN\''});
@@ -125,7 +126,7 @@ exports.updateUser = async (req, res, next) => {
     }
   }
   if (req.body.userType) {
-    if (req.body.userType == 'USER' || req.body.userType == 'ADMIN') {
+    if (req.body.userType === 'USER' || req.body.userType === 'ADMIN') {
       user.userType = req.body.userType;
     } else {
       return res.status(401).json({message: 'userType can only be \'USER\' or \'ADMIN\''});
@@ -156,7 +157,17 @@ exports.updateUser = async (req, res, next) => {
 };
 
 exports.deleteUser = (req, res, next) => {
-  res.locals.user.delete()
-    .then(() => res.status(204).end())
-    .catch(error => res.status(500).json(error));
+  // ensure that this user does not own any stores, if so prevent deletion
+  Store.find({}).then(stores => {
+    if ((stores.filter(store => store.userId.toString() === res.locals.user._id.toString())).length > 0) {
+      return res.status(400).json({
+        message: 'Cannot delete this user because they own some stores. To delete this user, first delete or transfer all the stores they have created'
+      });
+    } else {
+      // delete user
+       res.locals.user.delete()
+        .then(() => res.status(204).end())
+        .catch(error => res.status(500).json(error));
+    }
+  }).catch(error => res.status(500).json(error));
 };
