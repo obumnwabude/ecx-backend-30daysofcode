@@ -7,7 +7,7 @@ exports.createCart = (req, res, next) => {
   const products = res.locals.products;
 
   // get return products
-  let returnProducts = [];
+  const returnProducts = [];
   products.forEach(product => returnProducts.push({
     productId: product._id,
     storeId: store._id,
@@ -16,10 +16,15 @@ exports.createCart = (req, res, next) => {
     price: product.price
   }));
 
-  // test 
-  res.status(201).json({
-    buyerEmail: user.email,
-    storeName: store.name,
+  // make the cart 
+  const cart = new Cart({
+    userId: user._id,
     products: returnProducts
   });
+
+  // save and return 
+  cart.save().then(() => res.status(201).json({
+    message: 'Cart successfully created',
+    products: returnProducts
+  })).catch(error => res.status(500).json(error));
 };
