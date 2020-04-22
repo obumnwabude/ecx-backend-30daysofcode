@@ -21,6 +21,6 @@ module.exports = (req, res, next) => {
     }).catch(error => {
       if (error.name === 'CastError') 
         return res.status(400).json({message: `Invalid Store ID: ${storeId}`});
-      res.status(500).json(error);
+      return res.status(500).json(error);
     });
 };

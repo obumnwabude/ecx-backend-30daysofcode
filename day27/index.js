@@ -7,6 +7,7 @@ const indexRoutes = require('./routes/index');
 const userRoutes = require('./routes/user');
 const storeRoutes = require('./routes/store');
 const productRoutes = require('./routes/product');
+const cartRoutes = require('./routes/cart');
 const port = process.env.PORT || 3000;
 
 // connect to mongodb
@@ -39,5 +40,6 @@ app.use('/', indexRoutes);
 app.use('/user', userRoutes);
 app.use('/store', storeRoutes);
 app.use('/product', productRoutes);
+app.use('/cart', cartRoutes);
 
 module.exports = app.listen(port);
