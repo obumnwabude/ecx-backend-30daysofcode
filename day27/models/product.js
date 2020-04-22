@@ -13,7 +13,6 @@ const imageSchema = {
 module.exports = mongoose.model('Product', new mongoose.Schema({
   storeId:  {type: mongoose.Schema.Types.ObjectId, ref: 'Store', required: true},
   name: { type: String, required: true},
-  quantity: { type: Number, required: true},
   dateCreated: { type: Date, default: new Date() },
   price: {type: Number, required: true},
   discountPrice: Number,

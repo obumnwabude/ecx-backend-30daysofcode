@@ -11,8 +11,6 @@ exports.createProduct = (req, res, next) => {
   // ensures that at least name, quantity, price, inStock and description, are provided
   if (!(req.body.name)) 
     return res.status(401).json({message: 'Please provide a valid name'});
-  else if (!(req.body.quantity))
-    return res.status(401).json({message: 'Please provide a valid quantity'});
   else if (!(req.body.price))
     return res.status(401).json({message: 'Please provide a valid price'});
   else if (!(req.body.description))
@@ -27,14 +25,6 @@ exports.createProduct = (req, res, next) => {
       return res.status(401).json({message: 'The price must be a numeric value'});
     } else if (req.body.price < 1) {
       return res.status(401).json({message: 'The price must be greater than 0'});
-    }
-  }
-  // for quantity
-  if (req.body.quantity) {
-    if (isNaN(req.body.quantity)) {
-      return res.status(401).json({message: 'The quantity must be a numeric value'});
-    } else if (req.body.quantity < 1) {
-      return res.status(401).json({message: 'The quantity must be greater than 0'});
     }
   }
   // for discountPrice
@@ -58,7 +48,6 @@ exports.createProduct = (req, res, next) => {
   const product = new Product({
     storeId: res.locals.store._id,
     name: req.body.name,
-    quantity: req.body.quantity,
     price: req.body.price,
     description: req.body.description,
     discountPrice: req.body.discountPrice || 0,
@@ -72,7 +61,7 @@ exports.createProduct = (req, res, next) => {
       down: ''
     },
     category: req.body.category || '',
-    inStock: req.body.inStock || 1,
+    inStock: req.body.inStock,
     variations: req.body.variations || []
   });
 
@@ -93,11 +82,11 @@ exports.updateProduct = async (req, res, next) => {
   const product = res.locals.product;
 
   // check and ensure that there is something to be updated in the store from request body
-  if (!(req.body.storeId || req.body.name || req.body.quantity || req.body.description
+  if (!(req.body.storeId || req.body.name || req.body.description
    || req.body.price || req.body.discountPrice || req.body.images || req.body.category 
    || req.body.inStock || req.body.variations)) { 
     return res.status(401).json({
-      message: 'Please provide valid storeId, name, email, quantity, description, price, discountPrice, images, category, inStock or variations to update with'
+      message: 'Please provide valid storeId, name, email, description, price, discountPrice, images, category, inStock or variations to update with'
     });
   }
 
@@ -109,14 +98,6 @@ exports.updateProduct = async (req, res, next) => {
     } else if (req.body.price < 1) {
       return res.status(401).json({message: 'The price must be greater than 0'});
     } else product.price = req.body.price;
-  }
-  // for quantity
-  if (req.body.quantity) {
-    if (isNaN(req.body.quantity)) {
-      return res.status(401).json({message: 'The quantity must be a numeric value'});
-    } else if (req.body.quantity < 0) {
-      return res.status(401).json({message: 'The quantity must be greater than 0'});
-    } else product.quantity = req.body.quantity;
   }
   // for discountPrice
   if (req.body.discountPrice) {
