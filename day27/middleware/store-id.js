@@ -1,12 +1,11 @@
 const Store = require('../models/store');
-const User = require('../models/user');
 
 module.exports = (req, res, next) => {
   // where to get the id from
   let storeId;
-  if (res.locals.product != undefined) storeId = res.locals.product.storeId
-  else if (req.body.storeId) storeId = req.body.storeId
-  else storeId = req.params.id
+  if (res.locals.product != undefined) storeId = res.locals.product.storeId;
+  else if (req.body.storeId) storeId = req.body.storeId;
+  else storeId = req.params.id;
   // retrieve store in database
   Store.findOne({_id: storeId})
     .then(async store => {
@@ -14,29 +13,14 @@ module.exports = (req, res, next) => {
       if (!store) {
         return res.status(400).json({message: `Store with _id: ${storeId} not found.`});
       } else {
-        // retrieve user with userId in store 
-        let user;
-        try {
-          user = await User.findOne({_id: store.userId});
-        } catch {
-          return res.status(500).json(error);
-        }
-        // check if no user was found and return 
-        if (!user) {
-          return res.status(400).json({
-            message: `Can't access the store with store _id: ${storeId} because its creator with userId: ${store.userId} was not found.`
-          });
-        } else {
-          // save user and store on res.locals 
-          res.locals.store = store;
-          res.locals.user = user;
-          // pass execution to next function
-          next();
-        }
+        // save store on res.locals 
+        res.locals.store = store;
+        // pass execution to next function
+        next();
       }
     }).catch(error => {
       if (error.name === 'CastError') 
-        return res.status(400).json({message: `Invalid Store ID: ${res.locals.product.storeId || req.body.storeId || req.params.id}`});
+        return res.status(400).json({message: `Invalid Store ID: ${storeId}`});
       res.status(500).json(error);
     });
 };
