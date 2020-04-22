@@ -25,6 +25,10 @@ exports.createCart = (req, res, next) => {
   // save and return 
   cart.save().then(() => res.status(201).json({
     message: 'Cart successfully created',
-    products: returnProducts
+    cart: cart
   })).catch(error => res.status(500).json(error));
+};
+
+exports.getCart = (req, res, next) => {
+  res.status(200).json(res.locals.cart);
 };
