@@ -11,6 +11,6 @@ const productSchema = {
 module.exports = mongoose.model('Cart', new mongoose.Schema({
   userId:  {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
   dateCreated: { type: Date, expires: 86400, default: new Date() },
-  products: {type: [productSchema], required: true}
+  products: {type: [productSchema]}
 }));
 

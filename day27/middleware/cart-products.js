@@ -2,12 +2,16 @@ const Product = require('../models/product');
 
 module.exports = (req, res, next) => {
   // ensure that there is products in request body
-  if (!(req.body.products))
+  if (!(req.body.products)) 
     return res.status(401).json({message: 'Please provide the products to be added to this Cart'});
   else if (!Array.isArray(req.body.products))
     return res.status(401).json({message: 'products in request body should be an Array'});
-  else if (req.body.products.length < 1) 
+  else if (req.method == 'POST' && req.body.products.length < 1) 
     return res.status(401).json({message: 'At least one product must be added to a new cart'})
+  else if (req.method == 'PUT' && req.body.products.length == 0) {
+    res.locals.products = [];
+    next();
+  }
   else {
     // create new array of products for reference after iteration
     const products = [];
