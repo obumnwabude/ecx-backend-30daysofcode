@@ -100,4 +100,10 @@ exports.updateCart = (req, res, next) => {
     message: 'Update Successful',
     cart: updated
   })).catch(error => res.status(500).json(error));
-}
+};
+
+exports.deleteCart = (req, res, next) => {
+  res.locals.cart.delete()
+    .then(() => res.status(204).end())
+    .catch(error => res.status(500).json(error));
+};
