@@ -13,7 +13,7 @@ module.exports = mongoose.model(new mongoose.Schema({
   referenceId: {type: String, required: true},
   customer: customerSchema,
   date: {type: Date, default: new Date()},
-  shippingAddress: addressSchema,
+  shippingAddress: {type: addressSchema, required: true},
   status: {
     type: String,
     enum: ['Sent', 'In-transit', 'Delivered'],

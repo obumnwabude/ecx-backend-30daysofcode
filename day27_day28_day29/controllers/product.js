@@ -44,7 +44,7 @@ exports.createProduct = (req, res, next) => {
     }
   }
 
-  // create the store
+  // create the product
   const product = new Product({
     storeId: res.locals.store._id,
     name: req.body.name,
