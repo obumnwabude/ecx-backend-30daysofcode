@@ -13,3 +13,6 @@
 [submodule "day26"]
 	path = day26
 	url = https://github.com/obumnwabude/nodecoin
+[submodule "day27_day28_day29"]
+	path = day27_day28_day29
+	url = https://github.com/obumnwabude/wolverstore
